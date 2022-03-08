@@ -15,3 +15,32 @@
  */
 
 package com.example.android.devbyteviewer.database
+
+import android.content.Context
+import androidx.room.*
+
+@Dao
+interface VideoDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertAll(videos: List<DatabaseVideo>)
+}
+
+@Database(entities = [DatabaseVideo::class], version = 1)
+abstract class VideoDatabase : RoomDatabase() {
+    abstract val videoDao: VideoDao
+}
+
+private lateinit var INSTANCE: VideoDatabase
+
+fun getDatabase(context: Context): VideoDatabase {
+    synchronized(VideoDatabase::class.java) {
+        if (!::INSTANCE.isInitialized) {
+            INSTANCE = Room.databaseBuilder(
+                context.applicationContext,
+                VideoDatabase::class.java,
+                "videos"
+            ).build()
+        }
+    }
+    return INSTANCE
+}
